@@ -5,11 +5,14 @@ import Footer from './components/Footer.jsx'
 import HomePage from './pages/HomePage.jsx'
 import DetailedFilePage from './pages/DetailedFilePage.jsx'
 import { DETAILED_FILE_PATH } from './data.js'
+import { useScrollToTop } from './lib/useScrollToTop.js'
 
 export default function App() {
   const [theme, setTheme] = useState(() =>
     document.documentElement.dataset.theme === 'light' ? 'light' : 'dark',
   )
+
+  useScrollToTop()
 
   useLayoutEffect(() => {
     document.documentElement.dataset.theme = theme

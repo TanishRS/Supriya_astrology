@@ -10,9 +10,11 @@ export function useSectionHashScroll() {
 
   useEffect(() => {
     if (!hash) return
-    const id = hash.slice(1)
-    // Wait a frame so the freshly-mounted page has laid out before measuring it
-    const raf = requestAnimationFrame(() => scrollToSection(id))
-    return () => cancelAnimationFrame(raf)
+    // No extra frame wait needed: useEffect already runs after the browser
+    // has painted the newly-mounted page, so layout is settled by the time
+    // this fires. The previous rAF wrapper added a dependency on animation
+    // frames actually being scheduled, which a backgrounded/throttled tab
+    // can stall indefinitely — silently stranding the visitor at the top.
+    scrollToSection(hash.slice(1))
   }, [hash])
 }
