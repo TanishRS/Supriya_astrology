@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#070617" />
+
+    <title>Astrologer Supriya — Astrology, Tarot, Numerology, Vastu, Reiki, Akashic Records</title>
+    <meta
+      name="description"
+      content="Clarity on health, wealth, relationships & career with Supriya — Astrology, Tarot, Numerology, Vastu, Reiki, Akashic Record Reading and Inner Child Healing. Book a consultation on WhatsApp."
+    />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Astrologer Supriya — Astrology, Tarot, Numerology, Vastu, Reiki, Akashic Records" />
+    <meta
+      property="og:description"
+      content="Clarity on health, wealth, relationships & career through ancient wisdom. Book a consultation with Supriya."
+    />
+    <!-- These must be absolute URLs on a domain that actually serves the site, or
+         WhatsApp/Instagram link previews show no image. Point them at the custom
+         domain once supriyakirugaval.com is connected to this Vercel project. -->
+    <meta property="og:url" content="https://supriya-astrology.vercel.app" />
+    <meta property="og:image" content="https://supriya-astrology.vercel.app/supriya-portrait.jpg" />
+    <meta property="og:image:alt" content="Supriya, astrology, tarot and energy healing consultant" />
+    <meta name="twitter:card" content="summary" />
+    <!-- Uses the portrait as the share image. [OPEN ITEM] Still no logo/brand mark
+         from the client; a dedicated 1200x630 landscape banner would present better
+         on WhatsApp/Instagram link previews than this square portrait. -->
+
+    <link rel="canonical" href="https://supriya-astrology.vercel.app" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <script>
+      // Set the theme before first paint to avoid a flash of the wrong mode
+      ;(function () {
+        try {
+          var t = localStorage.getItem('theme')
+          if (t !== 'light' && t !== 'dark') {
+            t = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'
+          }
+          document.documentElement.dataset.theme = t
+        } catch (e) {
+          document.documentElement.dataset.theme = 'dark'
+        }
+      })()
+    </script>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

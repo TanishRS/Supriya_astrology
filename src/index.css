@@ -1,0 +1,294 @@
+@import "tailwindcss";
+
+/* ---------------------------------------------------------------------------
+   Theme tokens — dark (default) and light, switched via data-theme on <html>.
+   Components use the semantic colors (canvas/ink/line/card/accent) so both
+   themes stay in sync from this one place.
+--------------------------------------------------------------------------- */
+:root {
+  --canvas: #060514;
+  --ink-hi: #f8fafc;
+  --ink: #d6d9e8;
+  --ink-mute: #94a3b8;
+  --ink-faint: #64748b;
+  --line: rgba(255, 255, 255, 0.1);
+  --line-strong: rgba(255, 255, 255, 0.22);
+  --card: rgba(255, 255, 255, 0.03);
+  --card-hover: rgba(255, 255, 255, 0.055);
+  --accent: #e8c476;
+  --accent-strong: #d4a94e;
+  /* Filled-accent button: background + the foreground that stays legible on it */
+  --accent-fill: #d4a94e;
+  --accent-fill-ink: #060514;
+  --silhouette: #4c3a94;
+  --portrait-a: #1d1b4f;
+  --portrait-b: #0a0922;
+  --focus: #d4a94e;
+  --sel-bg: rgba(212, 169, 78, 0.35);
+  --sel-fg: #ffffff;
+  --backing-strong: rgba(6, 5, 20, 0.72);
+  --backing-soft: rgba(6, 5, 20, 0.35);
+  --glow-strong: rgba(76, 58, 148, 0.4);
+  --glow-soft: rgba(76, 58, 148, 0.35);
+  --field-bg: rgba(6, 5, 20, 0.6);
+  --field-border: rgba(255, 255, 255, 0.15);
+  --field-border-hover: rgba(255, 255, 255, 0.28);
+  --field-text: #f1f5f9;
+  --field-placeholder: #64748b;
+  --picker-filter: invert(0.8) sepia(0.4) saturate(2) hue-rotate(5deg);
+  --select-arrow: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="8"><path d="M1 1l5 5 5-5" stroke="%23e8c476" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>');
+  color-scheme: dark;
+}
+
+[data-theme="light"] {
+  --canvas: #faf7f0;
+  --ink-hi: #241c40;
+  --ink: #3a3358;
+  --ink-mute: #5a527e;
+  --ink-faint: #665e92;
+  --line: rgba(36, 28, 64, 0.14);
+  --line-strong: rgba(36, 28, 64, 0.28);
+  --card: rgba(255, 255, 255, 0.72);
+  --card-hover: rgba(255, 255, 255, 0.92);
+  --accent: #8f6b1d;
+  --accent-strong: #a37c22;
+  --accent-fill: #7d5a13;
+  --accent-fill-ink: #ffffff;
+  --silhouette: #b3a6de;
+  --portrait-a: #ece5f8;
+  --portrait-b: #ddd3f2;
+  --focus: #8f6b1d;
+  --sel-bg: rgba(212, 169, 78, 0.45);
+  --sel-fg: #241c40;
+  --backing-strong: rgba(250, 247, 240, 0.8);
+  --backing-soft: rgba(250, 247, 240, 0.4);
+  --glow-strong: rgba(124, 92, 255, 0.14);
+  --glow-soft: rgba(124, 92, 255, 0.12);
+  --field-bg: rgba(255, 255, 255, 0.75);
+  --field-border: rgba(36, 28, 64, 0.2);
+  --field-border-hover: rgba(36, 28, 64, 0.38);
+  --field-text: #241c40;
+  --field-placeholder: #665e92;
+  --picker-filter: none;
+  --select-arrow: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="8"><path d="M1 1l5 5 5-5" stroke="%238f6b1d" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>');
+  color-scheme: light;
+}
+
+@theme {
+  /* Fixed brand colors (do not flip with theme) */
+  --color-midnight-950: #060514;
+  --color-midnight-900: #0a0922;
+  --color-midnight-800: #131238;
+  --color-midnight-700: #1d1b4f;
+  --color-violet-glow: #7c5cff;
+  --color-violet-deep: #4c3a94;
+  --color-gold-300: #f0d494;
+  --color-gold-400: #e8c476;
+  --color-gold-500: #d4a94e;
+  --color-gold-600: #b8903a;
+
+  --font-display: "Cormorant Garamond", Georgia, "Times New Roman", serif;
+  --font-body: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+}
+
+@theme inline {
+  /* Semantic, theme-aware colors */
+  --color-canvas: var(--canvas);
+  --color-ink-hi: var(--ink-hi);
+  --color-ink: var(--ink);
+  --color-ink-mute: var(--ink-mute);
+  --color-ink-faint: var(--ink-faint);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-card: var(--card);
+  --color-card-hover: var(--card-hover);
+  --color-accent: var(--accent);
+  --color-accent-strong: var(--accent-strong);
+  --color-accent-fill: var(--accent-fill);
+  --color-accent-fill-ink: var(--accent-fill-ink);
+  --color-silhouette: var(--silhouette);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-canvas font-body text-ink antialiased;
+  overflow-x: hidden;
+  transition: background-color 0.5s ease, color 0.5s ease;
+}
+
+/* Elegant serif headings */
+h1, h2, h3 {
+  @apply font-display;
+}
+
+::selection {
+  background: var(--sel-bg);
+  color: var(--sel-fg);
+}
+
+/* Gold gradient text for accent words */
+.text-gold-shimmer {
+  background: linear-gradient(120deg, #b8903a 0%, #f0d494 45%, #e8c476 60%, #b8903a 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+[data-theme="light"] .text-gold-shimmer {
+  background: linear-gradient(120deg, #7d5a13 0%, #c99a2e 45%, #a37c22 60%, #7d5a13 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+/* Subtle dotted starfield texture — continues from the hero into About (per wireframe 1a) */
+.starfield {
+  background-image:
+    radial-gradient(1px 1px at 12% 22%, rgba(255, 255, 255, 0.55) 50%, transparent 51%),
+    radial-gradient(1px 1px at 78% 12%, rgba(255, 255, 255, 0.4) 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 34% 64%, rgba(232, 196, 118, 0.5) 50%, transparent 51%),
+    radial-gradient(1px 1px at 62% 42%, rgba(255, 255, 255, 0.35) 50%, transparent 51%),
+    radial-gradient(1px 1px at 90% 68%, rgba(255, 255, 255, 0.45) 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 22% 88%, rgba(124, 92, 255, 0.45) 50%, transparent 51%),
+    radial-gradient(1px 1px at 48% 8%, rgba(255, 255, 255, 0.3) 50%, transparent 51%),
+    radial-gradient(1px 1px at 5% 55%, rgba(232, 196, 118, 0.35) 50%, transparent 51%),
+    radial-gradient(1px 1px at 70% 90%, rgba(255, 255, 255, 0.3) 50%, transparent 51%);
+  background-size: 420px 420px;
+}
+[data-theme="light"] .starfield {
+  background-image:
+    radial-gradient(1px 1px at 12% 22%, rgba(76, 58, 148, 0.4) 50%, transparent 51%),
+    radial-gradient(1px 1px at 78% 12%, rgba(76, 58, 148, 0.3) 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 34% 64%, rgba(163, 124, 34, 0.45) 50%, transparent 51%),
+    radial-gradient(1px 1px at 62% 42%, rgba(76, 58, 148, 0.28) 50%, transparent 51%),
+    radial-gradient(1px 1px at 90% 68%, rgba(76, 58, 148, 0.32) 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 22% 88%, rgba(124, 92, 255, 0.35) 50%, transparent 51%),
+    radial-gradient(1px 1px at 48% 8%, rgba(76, 58, 148, 0.24) 50%, transparent 51%),
+    radial-gradient(1px 1px at 5% 55%, rgba(163, 124, 34, 0.35) 50%, transparent 51%),
+    radial-gradient(1px 1px at 70% 90%, rgba(76, 58, 148, 0.24) 50%, transparent 51%);
+}
+
+/* Static cosmic gradient — also the graceful fallback when the 3D scene is skipped */
+.cosmic-gradient {
+  background:
+    radial-gradient(ellipse 80% 55% at 50% 40%, rgba(76, 58, 148, 0.55) 0%, transparent 65%),
+    radial-gradient(ellipse 45% 35% at 50% 45%, rgba(124, 92, 255, 0.28) 0%, transparent 70%),
+    radial-gradient(ellipse 30% 22% at 50% 48%, rgba(212, 169, 78, 0.12) 0%, transparent 70%),
+    linear-gradient(180deg, #06051a 0%, #0a0922 55%, #06051a 100%);
+}
+[data-theme="light"] .cosmic-gradient {
+  background:
+    radial-gradient(ellipse 80% 55% at 50% 40%, rgba(124, 92, 255, 0.16) 0%, transparent 65%),
+    radial-gradient(ellipse 45% 35% at 50% 45%, rgba(163, 124, 34, 0.1) 0%, transparent 70%),
+    radial-gradient(ellipse 30% 22% at 50% 48%, rgba(212, 169, 78, 0.12) 0%, transparent 70%),
+    linear-gradient(180deg, #faf7f0 0%, #f2ecfb 55%, #faf7f0 100%);
+}
+
+/* Radial dark/light backing that keeps hero text readable over the 3D scene */
+.hero-backing {
+  background: radial-gradient(closest-side, var(--backing-strong), var(--backing-soft) 60%, transparent);
+}
+
+/* Violet glow washes behind the Book section and footer */
+.book-glow {
+  background: radial-gradient(ellipse 70% 60% at 50% 50%, var(--glow-strong), transparent 70%);
+}
+.footer-glow {
+  background: radial-gradient(ellipse 75% 100% at 50% 100%, var(--glow-soft), transparent 70%);
+}
+
+/* Portrait placeholder disc (About) */
+.portrait-disc {
+  background: linear-gradient(180deg, var(--portrait-a), var(--portrait-b));
+}
+
+/* Glassmorphism card (Book section) */
+.glass-card {
+  background: rgba(19, 18, 56, 0.45);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid rgba(232, 196, 118, 0.18);
+  box-shadow:
+    0 0 60px rgba(124, 92, 255, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  transition: background-color 0.5s ease, border-color 0.5s ease;
+}
+[data-theme="light"] .glass-card {
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(163, 124, 34, 0.35);
+  box-shadow:
+    0 0 60px rgba(124, 92, 255, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85);
+}
+
+/* Form controls on the glass card */
+.field-input {
+  @apply w-full rounded-lg px-4 py-3 text-sm transition-colors;
+  background: var(--field-bg);
+  border: 1px solid var(--field-border);
+  color: var(--field-text);
+}
+.field-input::placeholder {
+  color: var(--field-placeholder);
+}
+.field-input:hover {
+  border-color: var(--field-border-hover);
+}
+.field-input:focus {
+  outline: 2px solid var(--focus);
+  outline-offset: 1px;
+  border-color: transparent;
+}
+
+/* Themed chevron for the service dropdown */
+.field-select {
+  appearance: none;
+  background-image: var(--select-arrow);
+  background-position: right 1rem center;
+  background-repeat: no-repeat;
+  padding-right: 2.5rem;
+}
+
+/* Consistent keyboard focus everywhere else */
+a:focus-visible,
+button:focus-visible,
+select:focus-visible,
+summary:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* Native date/time pickers: match the theme */
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
+  filter: var(--picker-filter);
+  cursor: pointer;
+}
+
+/* Scroll cue bounce in the hero */
+@keyframes scroll-cue {
+  0%, 100% { transform: translateY(0); opacity: 0.7; }
+  50% { transform: translateY(7px); opacity: 1; }
+}
+.animate-scroll-cue {
+  animation: scroll-cue 2.2s ease-in-out infinite;
+}
+
+/* Mobile testimonial carousel: hide scrollbar but keep it scrollable */
+.snap-carousel {
+  scrollbar-width: none;
+}
+.snap-carousel::-webkit-scrollbar {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .animate-scroll-cue {
+    animation: none;
+  }
+}
