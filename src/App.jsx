@@ -4,7 +4,8 @@ import Nav from './components/Nav.jsx'
 import Footer from './components/Footer.jsx'
 import HomePage from './pages/HomePage.jsx'
 import DetailedFilePage from './pages/DetailedFilePage.jsx'
-import { DETAILED_FILE_PATH } from './data.js'
+import BookingConfirmedPage from './pages/BookingConfirmedPage.jsx'
+import { BOOKING_CONFIRMED_PATH, DETAILED_FILE_PATH } from './data.js'
 import { useScrollToTop } from './lib/useScrollToTop.js'
 
 export default function App() {
@@ -41,6 +42,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<HomePage theme={theme} />} />
           <Route path={DETAILED_FILE_PATH} element={<DetailedFilePage />} />
+          <Route path={BOOKING_CONFIRMED_PATH} element={<BookingConfirmedPage />} />
         </Routes>
       </main>
       <Footer />

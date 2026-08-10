@@ -1,61 +1,99 @@
 /* ===========================================================================
-   PAYMENT HANDOFF
+   PAYMENT HANDOFF — Razorpay Payment Page
    ---------------------------------------------------------------------------
-   [MISMATCH WITH BRIEF — READ THIS]
-   The appointment-step brief referred to "the existing Razorpay redirect flow"
-   and "the final payment button". Neither exists in this codebase: the Book
-   Consultation form has always ended in a "Continue on WhatsApp" button, and
-   there is no Razorpay integration anywhere in the project.
+   All of the following was verified against the live Payment Page. Please read
+   before changing anything here, because several of these are non-obvious and
+   fail *silently* rather than erroring.
 
-   Rather than invent a Payment Page URL (which would send real visitors on the
-   live site to a broken link), this module is built as a ready-to-wire seam:
+   1. The long-form /view URL is mandatory. The short rzp.io link strips every
+      query parameter on redirect, so prefill quietly does nothing. Do not
+      "tidy" this into the short link.
 
-     • Drop the real Payment Page URL into RAZORPAY_PAYMENT_PAGE_URL below and
-       the form automatically switches to the paid redirect, carrying every
-       prefill param — including the new appointment date and time — through to
-       the payment webhook exactly as the brief specifies.
-     • Until then, the form keeps its current WhatsApp behaviour, now with the
-       chosen appointment included in the message.
+   2. Only these field names prefill: full_name, email, phone, time_of_birth,
+      place_of_birth. They are Payment Pages custom-field names — NOT the
+      `prefill[...]` / `notes[...]` convention used by Razorpay Checkout. An
+      unrecognised key is dropped without warning.
 
-   Razorpay Payment Page prefill fields use the `prefill[...]` convention, and
-   arbitrary extra data is passed as `notes[...]`, which is what surfaces on the
-   webhook payload. CONFIRM the exact field names against the actual Payment
-   Page configuration before going live — a mismatched key silently drops the
-   value rather than erroring.
+   3. Date of Birth cannot be prefilled in any format. This is a limitation of
+      Razorpay's date-picker widget, not a formatting bug — the client fills
+      that one field by hand. Don't burn time retrying it.
+
+   4. The service/item checkboxes have no addressable field name, so the chosen
+      service can't be pre-ticked either. One unavoidable extra click.
+
+   5. `email` is intentionally absent from the redirect: the booking form does
+      not collect one. If an email field is ever added to the form, pass it
+      through here and it will prefill.
+
+   Appointment date/time and consultation type deliberately do NOT ride along on
+   this URL — they are already recorded server-side by the Apps Script
+   reservation call in lib/scheduling.js, which this flow leaves untouched.
    ========================================================================= */
 
-// CONFIRM WITH CLIENT BEFORE LAUNCH — paste the live Razorpay Payment Page URL
-export const RAZORPAY_PAYMENT_PAGE_URL = 'REPLACE_WITH_RAZORPAY_PAYMENT_PAGE_URL'
+export const RAZORPAY_PAYMENT_PAGE_URL = 'https://pages.razorpay.com/pl_TNXG7smMqqxEPj/view'
 
-export function isPaymentConfigured() {
-  return /^https?:\/\//i.test(RAZORPAY_PAYMENT_PAGE_URL)
+/** Key for the values that survive the round trip out to Razorpay and back. */
+export const BOOKING_HANDOFF_KEY = 'supriyaBookingHandoff'
+
+/**
+ * Razorpay's phone field wants bare digits — "+91 98765 43210" becomes
+ * "919876543210". Anything else (spaces, +, dashes) can break the prefill.
+ */
+export function toDigits(value) {
+  return (value ?? '').toString().replace(/\D/g, '')
 }
 
 /**
- * Builds the Payment Page URL with the client's details prefilled and the
- * appointment attached as notes, so date/time travel through to the webhook
- * alongside everything else.
+ * Builds the Payment Page redirect.
+ *
+ * Encoding note: this assembles the query string with encodeURIComponent
+ * rather than URLSearchParams on purpose. URLSearchParams serialises spaces as
+ * "+", and the prefill behaviour above was confirmed using percent-encoding —
+ * so this sticks to exactly the form that was tested.
+ *
+ * Empty values are omitted entirely rather than sent as blanks, since Time and
+ * Place of Birth are optional on the booking form.
  */
-export function buildPaymentUrl({
-  name,
-  whatsapp,
-  consultationType,
-  amount,
-  appointmentDate,
-  appointmentTime,
-  holdId,
-}) {
-  const url = new URL(RAZORPAY_PAYMENT_PAGE_URL)
-  const params = url.searchParams
+export function buildPaymentUrl({ fullName, whatsapp, timeOfBirth, placeOfBirth }) {
+  const params = [
+    ['full_name', fullName],
+    ['phone', toDigits(whatsapp)],
+    ['time_of_birth', timeOfBirth],
+    ['place_of_birth', placeOfBirth],
+  ]
+    .filter(([, value]) => value != null && value.toString().trim() !== '')
+    .map(([key, value]) => `${key}=${encodeURIComponent(value.toString().trim())}`)
+    .join('&')
 
-  params.set('prefill[name]', name ?? '')
-  params.set('prefill[contact]', whatsapp ?? '')
+  return params ? `${RAZORPAY_PAYMENT_PAGE_URL}?${params}` : RAZORPAY_PAYMENT_PAGE_URL
+}
 
-  params.set('notes[consultation_type]', consultationType ?? '')
-  params.set('notes[appointment_date]', appointmentDate ?? '')
-  params.set('notes[appointment_time]', appointmentTime ?? '')
-  if (holdId) params.set('notes[hold_id]', holdId)
-  if (amount) params.set('notes[amount_label]', amount)
+/**
+ * Razorpay's domain cannot read this site's sessionStorage, but the site can
+ * read it again once the browser comes back to /booking-confirmed — which is
+ * how the name and service survive the trip.
+ */
+export function saveBookingHandoff({ fullName, whatsapp, consultationType }) {
+  try {
+    sessionStorage.setItem(
+      BOOKING_HANDOFF_KEY,
+      JSON.stringify({ fullName, whatsapp, consultationType }),
+    )
+  } catch {
+    /* Private mode / storage disabled — the confirmation page falls back to a
+       generic message rather than breaking the payment redirect. */
+  }
+}
 
-  return url.toString()
+/** Reads the handoff back, then clears it so a refresh can't resend stale data. */
+export function takeBookingHandoff() {
+  try {
+    const raw = sessionStorage.getItem(BOOKING_HANDOFF_KEY)
+    if (!raw) return null
+    sessionStorage.removeItem(BOOKING_HANDOFF_KEY)
+    const parsed = JSON.parse(raw)
+    return parsed && typeof parsed === 'object' ? parsed : null
+  } catch {
+    return null
+  }
 }

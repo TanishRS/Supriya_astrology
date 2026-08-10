@@ -31,6 +31,11 @@ export const SECTIONS = [
 // Real routes (not anchors) — these need react-router navigation, not scrolling
 export const DETAILED_FILE_PATH = '/detailed-file'
 
+// Where Razorpay sends the visitor after a successful payment. Set this as the
+// Payment Page's redirect/callback URL in the Razorpay dashboard, otherwise the
+// WhatsApp handoff never runs and they simply land on Razorpay's own receipt.
+export const BOOKING_CONFIRMED_PATH = '/booking-confirmed'
+
 export const MODALITIES = [
   'Astrology',
   'Tarot',

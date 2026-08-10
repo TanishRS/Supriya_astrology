@@ -1,12 +1,10 @@
 import { useCallback, useState } from 'react'
 import { SERVICES } from '../data.js'
-import { openWhatsApp } from '../lib/whatsapp.js'
-import { formatAppointment, reserveSlot } from '../lib/scheduling.js'
-import { buildPaymentUrl, isPaymentConfigured } from '../lib/payment.js'
+import { reserveSlot } from '../lib/scheduling.js'
+import { buildPaymentUrl, saveBookingHandoff } from '../lib/payment.js'
 import AppointmentPicker from './AppointmentPicker.jsx'
 
 export default function BookForm({ selectedService, onServiceChange }) {
-  const [sent, setSent] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   // { date: 'YYYY-MM-DD', time: 'HH:MM' } — the *appointment*, not birth data.
   const [appointment, setAppointment] = useState({ date: null, time: null })
@@ -34,7 +32,9 @@ export default function BookForm({ selectedService, onServiceChange }) {
     setSubmitting(true)
     setReservationError(null)
 
-    let holdId = null
+    // Apps Script reservation — unchanged. This is what records the booking
+    // server-side (name, whatsapp, service, appointment date/time), which is why
+    // none of that needs to ride along on the Razorpay URL.
     try {
       const result = await reserveSlot({
         date: appointment.date,
@@ -52,7 +52,6 @@ export default function BookForm({ selectedService, onServiceChange }) {
         setAvailabilityToken((t) => t + 1)
         return
       }
-      holdId = result.holdId ?? null
     } catch {
       setReservationError('We could not hold that slot just now. Please try again.')
       setAvailabilityToken((t) => t + 1)
@@ -61,34 +60,20 @@ export default function BookForm({ selectedService, onServiceChange }) {
       setSubmitting(false)
     }
 
-    const payload = {
-      name: data.get('name'),
+    // Stash what has to survive the trip to Razorpay and back. Their domain
+    // can't see this site's sessionStorage, but /booking-confirmed can.
+    saveBookingHandoff({
+      fullName: data.get('name'),
       whatsapp: data.get('whatsapp'),
       consultationType: service?.name ?? '',
-      amount: service?.price ?? '',
-      appointmentDate: appointment.date,
-      appointmentTime: appointment.time,
-      holdId,
-    }
+    })
 
-    // Once the Razorpay Payment Page URL is filled in (see lib/payment.js) this
-    // redirects to checkout with the appointment carried through as notes.
-    // Until then the form keeps its existing WhatsApp behaviour.
-    if (isPaymentConfigured()) {
-      window.location.assign(buildPaymentUrl(payload))
-      return
-    }
-
-    openWhatsApp('Hello Supriya! I would like to book a consultation.', [
-      ['Consultation Type', service ? `${service.name} (${service.price})` : 'Not selected'],
-      ['Appointment', formatAppointment(appointment.date, appointment.time)],
-      ['Full Name', data.get('name')],
-      ['WhatsApp Number', data.get('whatsapp')],
-      ['Date of Birth', data.get('dob')],
-      ['Time of Birth', data.get('tob')],
-      ['Place of Birth', data.get('pob')],
-    ])
-    setSent(true)
+    window.location.href = buildPaymentUrl({
+      fullName: data.get('name'),
+      whatsapp: data.get('whatsapp'),
+      timeOfBirth: data.get('tob'),
+      placeOfBirth: data.get('pob'),
+    })
   }
 
   return (
@@ -200,17 +185,13 @@ export default function BookForm({ selectedService, onServiceChange }) {
             disabled={submitting}
             className="mt-8 w-full rounded-full bg-gradient-to-r from-gold-600 via-gold-400 to-gold-500 py-3.5 text-sm font-semibold tracking-wide text-midnight-950 shadow-[0_0_28px_rgba(212,169,78,0.3)] transition-all duration-300 hover:shadow-[0_0_44px_rgba(212,169,78,0.5)] hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {submitting
-              ? 'Holding your slot…'
-              : isPaymentConfigured()
-                ? 'Continue to Payment'
-                : 'Continue on WhatsApp'}
+            {submitting ? 'Holding your slot…' : 'Continue to Payment'}
           </button>
 
           <p className="mt-4 text-center text-xs leading-relaxed text-ink-mute" aria-live="polite">
-            {sent
-              ? 'WhatsApp should have opened with your details — just press send to confirm.'
-              : 'Submitting opens WhatsApp with your details pre-filled. No payment is taken online.'}
+            {submitting
+              ? 'Holding your slot, one moment…'
+              : 'You’ll be taken to Razorpay to pay securely. A couple of fields need filling in there — including your date of birth and your chosen service.'}
           </p>
         </form>
       </div>
