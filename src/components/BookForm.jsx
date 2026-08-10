@@ -3,6 +3,7 @@ import { SERVICES } from '../data.js'
 import { reserveSlot } from '../lib/scheduling.js'
 import { buildPaymentUrl, saveBookingHandoff } from '../lib/payment.js'
 import { handlePhoneInput } from '../lib/phone.js'
+import { BIRTH_DATE_MIN, birthDateMax } from '../lib/birthDate.js'
 import AppointmentPicker from './AppointmentPicker.jsx'
 
 export default function BookForm({ selectedService, onServiceChange }) {
@@ -71,6 +72,7 @@ export default function BookForm({ selectedService, onServiceChange }) {
 
     window.location.href = buildPaymentUrl({
       fullName: data.get('name'),
+      email: data.get('email'),
       whatsapp: data.get('whatsapp'),
       timeOfBirth: data.get('tob'),
       placeOfBirth: data.get('pob'),
@@ -122,11 +124,36 @@ export default function BookForm({ selectedService, onServiceChange }) {
               />
             </div>
 
+            {/* Razorpay marks Email as required on its own page, so collecting
+                it here means one less field to fill after the redirect. */}
+            <div className="sm:col-span-2">
+              <label htmlFor="bk-email" className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-ink-mute">
+                Email
+              </label>
+              <input
+                id="bk-email"
+                name="email"
+                type="email"
+                required
+                autoComplete="email"
+                placeholder="you@example.com"
+                className="field-input"
+              />
+            </div>
+
             <div>
               <label htmlFor="bk-dob" className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-ink-mute">
                 Date of Birth
               </label>
-              <input id="bk-dob" name="dob" type="date" required className="field-input" />
+              <input
+                id="bk-dob"
+                name="dob"
+                type="date"
+                required
+                min={BIRTH_DATE_MIN}
+                max={birthDateMax()}
+                className="field-input"
+              />
             </div>
 
             <div>

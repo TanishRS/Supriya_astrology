@@ -4,6 +4,7 @@ import gsap from 'gsap'
 import { DETAILED_FILE, WHATSAPP_URL } from '../data.js'
 import { openWhatsApp } from '../lib/whatsapp.js'
 import { handlePhoneInput } from '../lib/phone.js'
+import { BIRTH_DATE_MIN, birthDateMax } from '../lib/birthDate.js'
 import { WhatsAppIcon } from '../components/Icons.jsx'
 
 const GENDERS = ['Male', 'Female', 'Other']
@@ -212,7 +213,15 @@ export default function DetailedFilePage() {
                 <label htmlFor="df-birth-date" className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-ink-mute">
                   Birth Date
                 </label>
-                <input id="df-birth-date" name="birthDate" type="date" required className="field-input" />
+                <input
+                  id="df-birth-date"
+                  name="birthDate"
+                  type="date"
+                  required
+                  min={BIRTH_DATE_MIN}
+                  max={birthDateMax()}
+                  className="field-input"
+                />
               </div>
 
               <div>

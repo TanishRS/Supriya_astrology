@@ -21,9 +21,9 @@
    4. The service/item checkboxes have no addressable field name, so the chosen
       service can't be pre-ticked either. One unavoidable extra click.
 
-   5. `email` is intentionally absent from the redirect: the booking form does
-      not collect one. If an email field is ever added to the form, pass it
-      through here and it will prefill.
+   5. `email` IS sent. The booking form did not originally collect one, which
+      left Razorpay's required Email box empty on arrival; the form now asks
+      for it so it arrives prefilled.
 
    Appointment date/time and consultation type deliberately do NOT ride along on
    this URL — they are already recorded server-side by the Apps Script
@@ -64,9 +64,10 @@ export function toDigits(value) {
  * Empty values are omitted entirely rather than sent as blanks, since Time and
  * Place of Birth are optional on the booking form.
  */
-export function buildPaymentUrl({ fullName, whatsapp, timeOfBirth, placeOfBirth }) {
+export function buildPaymentUrl({ fullName, email, whatsapp, timeOfBirth, placeOfBirth }) {
   const params = [
     ['full_name', fullName],
+    ['email', email],
     ['phone', toDigits(whatsapp)],
     ['time_of_birth', timeOfBirth],
     ['place_of_birth', placeOfBirth],
