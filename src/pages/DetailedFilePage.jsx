@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import gsap from 'gsap'
 import { DETAILED_FILE, WHATSAPP_URL } from '../data.js'
 import { openWhatsApp } from '../lib/whatsapp.js'
+import { handlePhoneInput } from '../lib/phone.js'
 import { WhatsAppIcon } from '../components/Icons.jsx'
 
 const GENDERS = ['Male', 'Female', 'Other']
@@ -190,7 +191,7 @@ export default function DetailedFilePage() {
                 <label htmlFor="df-phone" className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-ink-mute">
                   Phone Number
                 </label>
-                <input id="df-phone" name="phone" type="tel" required autoComplete="tel" inputMode="tel" placeholder="+91 98765 43210" className="field-input" />
+                <input id="df-phone" name="phone" type="tel" required autoComplete="tel" inputMode="tel" onInput={handlePhoneInput} placeholder="+91 98765 43210" className="field-input" />
               </div>
 
               <div>

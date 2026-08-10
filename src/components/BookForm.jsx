@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react'
 import { SERVICES } from '../data.js'
 import { reserveSlot } from '../lib/scheduling.js'
 import { buildPaymentUrl, saveBookingHandoff } from '../lib/payment.js'
+import { handlePhoneInput } from '../lib/phone.js'
 import AppointmentPicker from './AppointmentPicker.jsx'
 
 export default function BookForm({ selectedService, onServiceChange }) {
@@ -115,6 +116,7 @@ export default function BookForm({ selectedService, onServiceChange }) {
                 required
                 autoComplete="tel"
                 inputMode="tel"
+                onInput={handlePhoneInput}
                 placeholder="+91 98765 43210"
                 className="field-input"
               />

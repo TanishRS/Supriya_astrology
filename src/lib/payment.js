@@ -36,11 +36,21 @@ export const RAZORPAY_PAYMENT_PAGE_URL = 'https://pages.razorpay.com/pl_TNXG7smM
 export const BOOKING_HANDOFF_KEY = 'supriyaBookingHandoff'
 
 /**
- * Razorpay's phone field wants bare digits — "+91 98765 43210" becomes
- * "919876543210". Anything else (spaces, +, dashes) can break the prefill.
+ * Razorpay's phone field wants bare digits, but its form renders its own
+ * "IN +91" country selector immediately to the left of that field. So a value
+ * that still carries the country code lands as +91 91XXXXXXXXXX — a dead
+ * number. Since the booking form's own placeholder is "+91 98765 43210",
+ * most people will type it that way, which makes this the common case rather
+ * than the edge case.
+ *
+ * This strips the country code (and the national trunk "0") so what reaches
+ * Razorpay is the bare 10-digit subscriber number its selector expects.
  */
 export function toDigits(value) {
-  return (value ?? '').toString().replace(/\D/g, '')
+  const digits = (value ?? '').toString().replace(/\D/g, '')
+  if (digits.length === 12 && digits.startsWith('91')) return digits.slice(2) // +91 98765 43210
+  if (digits.length === 11 && digits.startsWith('0')) return digits.slice(1) // 0 98765 43210
+  return digits
 }
 
 /**

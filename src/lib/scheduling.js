@@ -18,7 +18,11 @@ export const WORKING_HOURS = { start: '10:00', end: '19:00' }
 // CONFIRM WITH CLIENT BEFORE LAUNCH
 export const LUNCH_BREAK = { start: '13:00', end: '14:00' }
 
-export const SLOT_LENGTH_MINUTES = 30
+/* Hourly, deliberately. The picker is a real clock face with 12 hour numerals,
+   so a slot length that isn't a whole hour can't be represented on it — two
+   slots would land on the same numeral and one would be unreachable. If this
+   ever needs to be 30 again, the clock has to gain a minute hand first. */
+export const SLOT_LENGTH_MINUTES = 60
 
 /** How many bookable days to show in the date strip. */
 export const DAYS_TO_SHOW = 14
@@ -57,6 +61,15 @@ export function toTimeString(minutes) {
   const h = Math.floor(minutes / 60)
   const m = minutes % 60
   return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`
+}
+
+/** "14:00" -> { hour12: 2, period: 'PM' } — what the clock face needs. */
+export function to12Hour(hhmm) {
+  const h24 = Math.floor(toMinutes(hhmm) / 60)
+  return {
+    hour12: h24 % 12 === 0 ? 12 : h24 % 12,
+    period: h24 >= 12 ? 'PM' : 'AM',
+  }
 }
 
 /** "14:30" -> "2:30 PM" */
