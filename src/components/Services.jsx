@@ -44,7 +44,7 @@ export default function Services({ onBook }) {
 
               <button
                 type="button"
-                onClick={() => onBook(service.id)}
+                onClick={() => onBook(service.name)}
                 className="mt-6 w-full rounded-full border border-accent-strong/50 py-2.5 text-sm font-semibold text-accent transition-all duration-300 hover:bg-accent-fill hover:text-accent-fill-ink"
               >
                 Book This

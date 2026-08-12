@@ -13,9 +13,11 @@ export default function HomePage({ theme }) {
   const [selectedService, setSelectedService] = useState('')
   useSectionHashScroll()
 
-  // "Book This" on a service card pre-selects it in the form, then scrolls there
-  const handleBook = (serviceId) => {
-    setSelectedService(serviceId)
+  /* "Book This" pre-selects the service, then scrolls to the form. Matched by
+     NAME rather than a local id, because the dropdown's options now come from
+     the backend — a name that doesn't match simply leaves it unselected. */
+  const handleBook = (serviceName) => {
+    setSelectedService(serviceName)
     scrollToSection('book')
   }
 

@@ -10,6 +10,19 @@ export function sanitizePhone(value) {
 }
 
 /**
+ * Bare digits for Razorpay's prefill, with the country code removed —
+ * Checkout shows its own country selector, so a value still carrying 91 would
+ * be read as +91 91XXXXXXXXXX. The site's own placeholder is "+91 98765
+ * 43210", so people do type it that way.
+ */
+export function toDigits(value) {
+  const digits = (value ?? '').toString().replace(/\D/g, '')
+  if (digits.length === 12 && digits.startsWith('91')) return digits.slice(2)
+  if (digits.length === 11 && digits.startsWith('0')) return digits.slice(1)
+  return digits
+}
+
+/**
  * Attach to an uncontrolled phone input's onInput. Rewrites the value in place
  * while preserving the caret, so typing a stray letter mid-number doesn't
  * bounce the cursor to the end.
