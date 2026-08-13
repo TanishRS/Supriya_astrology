@@ -103,17 +103,22 @@ export function getUpcomingDays(workingDays, count = DAYS_TO_SHOW, from = new Da
 /**
  * Slot start times for each working window, kept grouped by window so the
  * clock can draw them as separate arcs. The real schedule is two distinct
- * sittings (e.g. morning and late evening) — the gap between them is simply
- * not available, rather than a "break" within one long day.
+ * sittings (morning and late evening) — the gap between them is simply not
+ * available, rather than a "break" within one long day.
+ *
+ * `end` is the last bookable START time, not the closing time. So a
+ * 19:00–23:00 window offers a 23:00 session (running to 23:30), which is how
+ * "7 to 11" reads to a person. Treating `end` as the closing time instead
+ * silently drops that final slot — the evening arc stopped at 10:30 PM.
  */
 export function generateWindowSlots(workingWindows, slotLengthMinutes) {
   if (!workingWindows?.length || !slotLengthMinutes) return []
   return workingWindows
     .map(({ start, end }) => {
       const open = toMinutes(start)
-      const close = toMinutes(end)
+      const lastStart = toMinutes(end)
       const slots = []
-      for (let t = open; t + slotLengthMinutes <= close; t += slotLengthMinutes) {
+      for (let t = open; t <= lastStart; t += slotLengthMinutes) {
         slots.push(toTimeString(t))
       }
       return slots

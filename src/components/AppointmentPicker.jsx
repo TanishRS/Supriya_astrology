@@ -23,6 +23,14 @@ const TICK_OUTER = 47
 
 const HOURS = [12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
 
+/* The minute hand has exactly two resting places: straight up for o'clock,
+   straight down for half past. Slots are always :00 or :30, so a freely
+   sweeping minute hand would only add precision nobody can use — two positions
+   make "half past" readable at a glance. */
+function minuteHandAngle(hhmm) {
+  return to12Hour(hhmm).minutes >= 30 ? 180 : 0
+}
+
 function pointAt(deg, radius) {
   const rad = ((deg - 90) * Math.PI) / 180
   return { x: CENTER + radius * Math.cos(rad), y: CENTER + radius * Math.sin(rad) }
@@ -54,8 +62,10 @@ export default function AppointmentPicker({ schedule, value, onChange, errorMess
   const selectedTime = value?.time ?? null
 
   const dialRef = useRef(null)
-  const handRef = useRef(null)
-  const handAngle = useRef({ deg: 0 })
+  const hourHandRef = useRef(null)
+  const minuteHandRef = useRef(null)
+  const hourAngle = useRef({ deg: 0 })
+  const minuteAngle = useRef({ deg: 0 })
   const autoPeriodFor = useRef(null)
 
   useEffect(() => {
@@ -156,31 +166,32 @@ export default function AppointmentPicker({ schedule, value, onChange, errorMess
   }, [selectedDate, loading, slotStates])
 
   /* --------------------------- hand animation ---------------------------- */
-  const animateHandTo = useCallback((deg) => {
-    if (!handRef.current) return
-    const from = handAngle.current.deg
+  const animateHand = useCallback((ref, store, deg) => {
+    if (!ref.current) return
+    const from = store.current.deg
+    // Rotate the short way round so a hand never sweeps the long arc.
     let delta = ((deg - from + 180) % 360) - 180
     if (delta < -180) delta += 360
     const to = from + delta
 
-    gsap.killTweensOf(handAngle.current)
+    gsap.killTweensOf(store.current)
     const apply = () =>
-      handRef.current?.setAttribute('transform', `rotate(${handAngle.current.deg} ${CENTER} ${CENTER})`)
+      ref.current?.setAttribute('transform', `rotate(${store.current.deg} ${CENTER} ${CENTER})`)
 
-    // The hand's angle is the only cue that depends on the tween running, so
+    // A hand's angle is the only cue that depends on the tween running, so
     // without this it would keep pointing at the previous slot.
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      handAngle.current.deg = to
+      store.current.deg = to
       apply()
       return
     }
-    gsap.to(handAngle.current, {
+    gsap.to(store.current, {
       deg: to,
       duration: 0.5,
       ease: 'back.out(1.7)',
       onUpdate: apply,
       onComplete: () => {
-        handAngle.current.deg = to
+        store.current.deg = to
         apply()
       },
     })
@@ -188,8 +199,9 @@ export default function AppointmentPicker({ schedule, value, onChange, errorMess
 
   useEffect(() => {
     if (!selectedTime) return
-    animateHandTo(clockAngle(selectedTime))
-  }, [selectedTime, animateHandTo])
+    animateHand(hourHandRef, hourAngle, clockAngle(selectedTime))
+    animateHand(minuteHandRef, minuteAngle, minuteHandAngle(selectedTime))
+  }, [selectedTime, animateHand])
 
   useEffect(() => {
     if (!dialRef.current || !selectedDate) return
@@ -259,8 +271,13 @@ export default function AppointmentPicker({ schedule, value, onChange, errorMess
     const move = (ev) => {
       const s = nearestAvailable(angleAt(ev))
       if (!s) return
-      handAngle.current.deg = s.angle
-      handRef.current?.setAttribute('transform', `rotate(${s.angle} ${CENTER} ${CENTER})`)
+      // Track both hands live during the drag, so half-past reads correctly
+      // while the pointer is still down.
+      hourAngle.current.deg = s.angle
+      hourHandRef.current?.setAttribute('transform', `rotate(${s.angle} ${CENTER} ${CENTER})`)
+      const m = minuteHandAngle(s.time)
+      minuteAngle.current.deg = m
+      minuteHandRef.current?.setAttribute('transform', `rotate(${m} ${CENTER} ${CENTER})`)
     }
     const up = (ev) => {
       const s = nearestAvailable(angleAt(ev))
@@ -353,8 +370,27 @@ export default function AppointmentPicker({ schedule, value, onChange, errorMess
               />
             ))}
 
+            {/* Minute hand — long and slim, pointing only at 12 or 6 */}
             <g
-              ref={handRef}
+              ref={minuteHandRef}
+              transform={`rotate(0 ${CENTER} ${CENTER})`}
+              style={{ opacity: selectedInPeriod ? 1 : 0, transition: 'opacity 300ms' }}
+            >
+              <line
+                x1={CENTER}
+                y1={CENTER + 5}
+                x2={CENTER}
+                y2={CENTER - MARKER_RADIUS + 4}
+                stroke="var(--accent)"
+                strokeWidth="1.1"
+                strokeLinecap="round"
+                opacity="0.85"
+              />
+            </g>
+
+            {/* Hour hand — shorter and heavier, so the two read as a clock */}
+            <g
+              ref={hourHandRef}
               transform={`rotate(0 ${CENTER} ${CENTER})`}
               style={{ opacity: selectedInPeriod ? 1 : 0, transition: 'opacity 300ms' }}
             >
@@ -362,13 +398,14 @@ export default function AppointmentPicker({ schedule, value, onChange, errorMess
                 x1={CENTER}
                 y1={CENTER + 4}
                 x2={CENTER}
-                y2={CENTER - MARKER_RADIUS + 6}
+                y2={CENTER - MARKER_RADIUS + 17}
                 stroke="var(--accent)"
-                strokeWidth="1.5"
+                strokeWidth="2.2"
                 strokeLinecap="round"
               />
             </g>
-            <circle cx={CENTER} cy={CENTER} r="1.5" fill="var(--accent)" opacity={selectedInPeriod ? 1 : 0.35} />
+
+            <circle cx={CENTER} cy={CENTER} r="1.8" fill="var(--accent)" opacity={selectedInPeriod ? 1 : 0.35} />
 
             {/* Decorative numerals — the slots themselves are the buttons */}
             {HOURS.map((h) => {
