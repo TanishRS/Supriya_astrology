@@ -22,23 +22,64 @@ export function isBackendConfigured() {
   return /^https?:\/\//i.test(APPS_SCRIPT_URL)
 }
 
-/** Apps Script rejects preflighted requests, so POSTs stay "simple" requests. */
-async function postJson(payload, { signal } = {}) {
-  const res = await fetch(APPS_SCRIPT_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    body: JSON.stringify(payload),
-    signal,
-  })
-  if (!res.ok) throw new Error(`Request failed (${res.status})`)
-  return res.json()
+/* Apps Script answers in ~1.5s warm, but a cold start or its occasional
+   transient 302 can leave a request hanging. Without a ceiling the booking
+   form sits on "Loading available times…" indefinitely with no way out, so
+   every call gets a deadline and reads (not writes) get one retry. */
+/* 9s leaves room for an Apps Script cold start (~1.5s warm) without making a
+   stalled request feel like a hang — worst case is two attempts, so ~18s
+   before the WhatsApp fallback and its Try again button appear. Writes get
+   longer because they create a Razorpay order and must not be cut short. */
+const READ_TIMEOUT_MS = 9000
+const WRITE_TIMEOUT_MS = 25000
+
+async function requestJson(url, options = {}, { retries = 0, timeoutMs = READ_TIMEOUT_MS } = {}) {
+  const { signal: callerSignal, ...rest } = options
+  let lastError
+
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    const controller = new AbortController()
+    const relayAbort = () => controller.abort()
+    callerSignal?.addEventListener('abort', relayAbort, { once: true })
+    const timer = setTimeout(() => controller.abort(), timeoutMs)
+
+    try {
+      const res = await fetch(url, { ...rest, signal: controller.signal })
+      if (!res.ok) throw new Error(`Request failed (${res.status})`)
+      return await res.json()
+    } catch (err) {
+      // An unmount/route change must abort for real, never retry.
+      if (callerSignal?.aborted) {
+        throw Object.assign(new Error('Aborted'), { name: 'AbortError' })
+      }
+      lastError = err
+    } finally {
+      clearTimeout(timer)
+      callerSignal?.removeEventListener('abort', relayAbort)
+    }
+  }
+  throw lastError ?? new Error('Request failed')
 }
 
-async function getJson(params, { signal } = {}) {
+/** Apps Script rejects preflighted requests, so POSTs stay "simple" requests. */
+function postJson(payload, { signal } = {}) {
+  return requestJson(
+    APPS_SCRIPT_URL,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload),
+      signal,
+    },
+    // Deliberately no retry: re-sending createOrder could hold two slots or
+    // open two Razorpay orders. A failed write is reported, not repeated.
+    { retries: 0, timeoutMs: WRITE_TIMEOUT_MS },
+  )
+}
+
+function getJson(params, { signal } = {}) {
   const qs = new URLSearchParams(params).toString()
-  const res = await fetch(`${APPS_SCRIPT_URL}?${qs}`, { signal })
-  if (!res.ok) throw new Error(`Request failed (${res.status})`)
-  return res.json()
+  return requestJson(`${APPS_SCRIPT_URL}?${qs}`, { signal }, { retries: 1 })
 }
 
 /**

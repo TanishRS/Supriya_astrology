@@ -46,6 +46,8 @@ function Shell({ children }) {
 export default function BookForm({ selectedService, onServiceChange }) {
   const [schedule, setSchedule] = useState(null)
   const [scheduleError, setScheduleError] = useState(null)
+  // Bumped by the Try again button so a stalled first load isn't a dead end.
+  const [scheduleAttempt, setScheduleAttempt] = useState(0)
 
   const [appointment, setAppointment] = useState({ date: null, time: null })
   const [slotError, setSlotError] = useState(null)
@@ -65,6 +67,7 @@ export default function BookForm({ selectedService, onServiceChange }) {
     }
     const controller = new AbortController()
     let active = true
+    setScheduleError(null)
 
     fetchSchedule({ signal: controller.signal })
       .then((data) => {
@@ -89,7 +92,7 @@ export default function BookForm({ selectedService, onServiceChange }) {
       active = false
       controller.abort()
     }
-  }, [])
+  }, [scheduleAttempt])
 
   const handleAppointmentChange = useCallback((next) => {
     setAppointment(next)
@@ -264,15 +267,26 @@ export default function BookForm({ selectedService, onServiceChange }) {
               : 'We can’t load the booking calendar at the moment.'}{' '}
             Message Supriya on WhatsApp and she’ll arrange your session personally.
           </p>
-          <a
-            href={WHATSAPP_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-gold-600 via-gold-400 to-gold-500 px-8 py-3.5 text-sm font-semibold tracking-wide text-midnight-950 transition-all duration-300 hover:brightness-110 sm:w-auto"
-          >
-            <WhatsAppIcon className="h-4.5 w-4.5" />
-            Book on WhatsApp
-          </a>
+          <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <a
+              href={WHATSAPP_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-gold-600 via-gold-400 to-gold-500 px-8 py-3.5 text-sm font-semibold tracking-wide text-midnight-950 transition-all duration-300 hover:brightness-110 sm:w-auto"
+            >
+              <WhatsAppIcon className="h-4.5 w-4.5" />
+              Book on WhatsApp
+            </a>
+            {scheduleError !== 'unconfigured' && (
+              <button
+                type="button"
+                onClick={() => setScheduleAttempt((n) => n + 1)}
+                className="w-full rounded-full border border-line-strong px-8 py-3.5 text-sm font-semibold text-ink-hi transition-all duration-300 hover:border-accent-strong/70 hover:text-accent sm:w-auto"
+              >
+                Try again
+              </button>
+            )}
+          </div>
         </div>
       </Shell>
     )
