@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { WHATSAPP_NUMBER, WHATSAPP_URL } from '../data.js'
 import { createOrder, fetchSchedule, isBackendConfigured, verifyPayment } from '../lib/api.js'
 import { openCheckout } from '../lib/razorpay.js'
-import { formatDateLabel, formatTimeLabel } from '../lib/scheduling.js'
+import { formatDateLabel, formatTimeLabel, getUpcomingDays } from '../lib/scheduling.js'
 import { handlePhoneInput, toDigits } from '../lib/phone.js'
 import { BIRTH_DATE_MIN, birthDateMax } from '../lib/birthDate.js'
 import { WhatsAppIcon } from './Icons.jsx'
@@ -69,7 +69,12 @@ export default function BookForm({ selectedService, onServiceChange }) {
     fetchSchedule({ signal: controller.signal })
       .then((data) => {
         if (!active) return
-        if (!data.workingDays.length || !data.workingWindows.length) {
+        /* Checking for bookable DAYS, not just a non-empty workingDays array:
+           if the backend ever sends day names in a shape this can't match, the
+           list is non-empty but resolves to nothing, and the form would render
+           with a dead date strip and no error at all. Better to fail loudly
+           into the WhatsApp fallback than to look fine and book nothing. */
+        if (!data.workingWindows.length || !getUpcomingDays(data.workingDays).length) {
           setScheduleError('empty')
           return
         }

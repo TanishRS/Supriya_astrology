@@ -15,6 +15,23 @@
 export const DAYS_TO_SHOW = 14
 
 const DAY_ABBR = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+const DAY_FULL = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+
+/* The backend sends full day names ("Monday"), but abbreviations are just as
+   plausible a thing for it to send later. Matching on the first three letters,
+   case-insensitively, accepts either — a mismatch here empties the date strip
+   entirely and kills booking with no visible error, so it is worth being
+   forgiving about. */
+function normaliseDay(name) {
+  return String(name ?? '').trim().slice(0, 3).toLowerCase()
+}
+
+export function matchesWorkingDay(workingDays, date) {
+  const wanted = normaliseDay(DAY_ABBR[date.getDay()])
+  return workingDays.some((d) => normaliseDay(d) === wanted)
+}
+
+export { DAY_FULL }
 
 export function toMinutes(hhmm) {
   const [h, m] = hhmm.split(':').map(Number)
@@ -69,7 +86,7 @@ export function getUpcomingDays(workingDays, count = DAYS_TO_SHOW, from = new Da
   const cursor = new Date(from.getFullYear(), from.getMonth(), from.getDate())
   // Guard the loop: a malformed workingDays list can't spin forever.
   for (let guard = 0; days.length < count && guard < 400; guard++) {
-    if (workingDays.includes(DAY_ABBR[cursor.getDay()])) {
+    if (matchesWorkingDay(workingDays, cursor)) {
       days.push({
         key: toDateKey(cursor),
         date: new Date(cursor),

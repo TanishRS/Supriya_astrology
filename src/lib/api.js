@@ -7,13 +7,13 @@
    changing it on the backend changes the site with no redeploy.
    ========================================================================= */
 
-export const APPS_SCRIPT_URL = 'REPLACE_WITH_DEPLOYED_WEB_APP_URL'
+export const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxtdN1qcBZNaprZ-oDmuWkQ9MS5TEOV0CE0xRDVmvQYqa8CuzOh4JPBrRe4-C1Ac4dk/exec'
 
 /* Deliberately not a real secret. It ships in the bundle and is readable by
    anyone who opens devtools — it only filters out casual drive-by abuse. The
    Razorpay Key Secret is the thing that actually matters, and that stays
    server-side in Script Properties where it belongs. */
-export const SITE_SECRET = 'REPLACE_WITH_THE_SAME_VALUE_STORED_IN_SCRIPT_PROPERTIES'
+export const SITE_SECRET = '8fK2mQ9xL7vP4zN6rT1yW3cA0sD5hJ8uB6eR9pX2kM7nV4qZ1tF8gH3wC6jL0sY5aE2dP9iN7xQ4bK8mR'
 
 /* The site is live. Until the URL above is filled in we must never fire a
    request at a placeholder string — the Book section shows a WhatsApp fallback
