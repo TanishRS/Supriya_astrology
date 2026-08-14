@@ -1,17 +1,29 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import gsap from 'gsap'
-import { DETAILED_FILE, WHATSAPP_URL } from '../data.js'
-import { openWhatsApp } from '../lib/whatsapp.js'
-import { handlePhoneInput } from '../lib/phone.js'
+import { DETAILED_FILE, WHATSAPP_NUMBER, WHATSAPP_URL } from '../data.js'
+import { createOrder, verifyPayment } from '../lib/api.js'
+import { openCheckout } from '../lib/razorpay.js'
+import { handlePhoneInput, toDigits } from '../lib/phone.js'
 import { BIRTH_DATE_MIN, birthDateMax } from '../lib/birthDate.js'
 import { WhatsAppIcon } from '../components/Icons.jsx'
 
 const GENDERS = ['Male', 'Female', 'Other']
 
+/* Same state machine as the Book Consultation form, so the two paid flows
+   behave identically — nothing renders underneath while Razorpay's own modal
+   is up, and a dismissed modal is never treated as a failure. */
+const IDLE = 'idle'
+const CREATING = 'creating'
+const CHECKOUT = 'checkout'
+const VERIFYING = 'verifying'
+const CONFIRMED = 'confirmed'
+
 export default function DetailedFilePage() {
   const rootRef = useRef(null)
-  const [sent, setSent] = useState(false)
+  const [status, setStatus] = useState(IDLE)
+  const [flowError, setFlowError] = useState(null)
+  const [confirmation, setConfirmation] = useState(null)
 
   useEffect(() => {
     document.title = 'Detailed Birth Chart File — Astrologer Supriya'
@@ -35,23 +47,99 @@ export default function DetailedFilePage() {
     return () => mm.revert()
   }, [])
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
+    if (status !== IDLE) return
+
     const data = new FormData(e.currentTarget)
-    openWhatsApp('Hello Supriya! I would like to order my Detailed File.', [
-      ['Full Name', data.get('name')],
-      ['Gender', data.get('gender')],
-      ['Email', data.get('email')],
-      ['Phone Number', data.get('phone')],
-      ['Birth Place', data.get('birthPlace')],
-      ['Birth Date', data.get('birthDate')],
-      ['Birth Time', data.get('birthTime')],
-      ['City', data.get('city')],
-      ['State', data.get('state')],
-      ['Message', data.get('message')],
-    ])
-    setSent(true)
+    const fullName = data.get('name')
+    const email = data.get('email')
+    const whatsapp = data.get('phone')
+
+    setFlowError(null)
+    setStatus(CREATING)
+
+    // 1. Log the order server-side and open a Razorpay order. Nothing is
+    //    recorded before this point — it runs only once they commit to paying.
+    let order
+    try {
+      order = await createOrder({
+        consultationType: 'Detailed File',
+        fullName,
+        whatsapp,
+        email,
+        gender: data.get('gender'),
+        dob: data.get('birthDate'),
+        tob: data.get('birthTime'),
+        pob: data.get('birthPlace'),
+        city: data.get('city'),
+        state: data.get('state'),
+        message: data.get('message'),
+      })
+    } catch {
+      setStatus(IDLE)
+      setFlowError('We could not start your order just now. Please check your connection and try again.')
+      return
+    }
+
+    if (!order?.success) {
+      setStatus(IDLE)
+      setFlowError(order?.message ?? 'We could not start your order. Please try again.')
+      return
+    }
+
+    // 2. Hand over to Razorpay's modal.
+    setStatus(CHECKOUT)
+    let result
+    try {
+      result = await openCheckout({
+        keyId: order.keyId,
+        orderId: order.orderId,
+        amount: order.amount,
+        currency: order.currency,
+        name: 'Supriya',
+        description: 'Detailed File — Written Birth Chart Report',
+        prefill: { name: fullName, contact: toDigits(whatsapp), email },
+      })
+    } catch {
+      setStatus(IDLE)
+      setFlowError('The payment window could not be opened. Please try again, or message Supriya directly.')
+      return
+    }
+
+    if (!result.paid) {
+      // Closing the modal is an ordinary thing to do, not an error.
+      setStatus(IDLE)
+      if (result.failure) setFlowError(`Payment did not go through: ${result.failure}`)
+      return
+    }
+
+    // 3. Verify the signature server-side before claiming anything worked.
+    setStatus(VERIFYING)
+    let verified
+    try {
+      verified = await verifyPayment(result.response)
+    } catch {
+      verified = { success: false }
+    }
+
+    if (!verified?.success) {
+      // Money may well have left their account, so this must never dead-end.
+      setStatus(IDLE)
+      setFlowError(
+        verified?.message ??
+          'Your payment went through, but we could not confirm it automatically. Please message Supriya on WhatsApp with your payment ID and she will sort it out right away.',
+      )
+      return
+    }
+
+    setConfirmation({ fullName, email })
+    setStatus(CONFIRMED)
   }
+
+  const confirmWhatsAppLink = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
+    `Hi Supriya, I just paid for my Detailed File. My name is ${confirmation?.fullName ?? ''}.`,
+  )}`
 
   return (
     <div ref={rootRef}>
@@ -153,9 +241,45 @@ export default function DetailedFilePage() {
             Book Your <span className="text-gold-shimmer">File</span>
           </h2>
           <p className="mt-3 text-center text-sm text-ink-mute" data-reveal>
-            Share your birth details below — we&rsquo;ll confirm your order on WhatsApp.
+            {status === CONFIRMED
+              ? 'Your order is confirmed.'
+              : 'Share your birth details below, then pay securely on this page.'}
           </p>
 
+          {status === CONFIRMED ? (
+            <div className="glass-card mt-10 rounded-3xl p-8 text-center sm:p-10">
+              <div className="relative mx-auto mb-6 h-16 w-16">
+                <div className="absolute -inset-2 rounded-full border border-accent-strong/25" aria-hidden="true" />
+                <div className="flex h-full w-full items-center justify-center rounded-full border border-accent-strong/50 bg-accent-strong/10">
+                  <svg viewBox="0 0 24 24" className="h-8 w-8 text-accent" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="m4 12.5 5 5 11-11" />
+                  </svg>
+                </div>
+              </div>
+
+              <p className="text-xs font-medium uppercase tracking-[0.35em] text-accent">Payment Confirmed</p>
+              <h3 className="mt-3 font-display text-3xl font-semibold text-ink-hi">
+                Thank you, <span className="text-gold-shimmer">{confirmation.fullName.split(' ')[0]}</span>
+              </h3>
+              <p className="mx-auto mt-4 max-w-sm text-sm leading-relaxed text-ink" aria-live="polite">
+                Supriya will send your Detailed File to{' '}
+                <span className="font-semibold text-ink-hi">{confirmation.email}</span> within{' '}
+                {DETAILED_FILE.delivery}.
+              </p>
+
+              {/* Courtesy only — the order is already logged server-side, so
+                  nothing depends on the customer sending this message. */}
+              <a
+                href={confirmWhatsAppLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-7 inline-flex w-full items-center justify-center gap-2 rounded-full border border-line-strong px-8 py-3.5 text-sm font-semibold text-ink-hi transition-all duration-300 hover:border-accent-strong/70 hover:text-accent sm:w-auto"
+              >
+                <WhatsAppIcon className="h-4.5 w-4.5" />
+                Message Supriya on WhatsApp
+              </a>
+            </div>
+          ) : (
           <form onSubmit={handleSubmit} className="glass-card mt-10 rounded-3xl p-6 sm:p-10" data-reveal>
             <div className="grid gap-5 sm:grid-cols-2">
               <div>
@@ -252,19 +376,42 @@ export default function DetailedFilePage() {
               </div>
             </div>
 
+            {flowError && (
+              <div className="mt-6 rounded-xl border border-red-400/40 bg-red-400/10 px-4 py-3 text-center" role="alert">
+                <p className="text-sm leading-relaxed text-red-200">{flowError}</p>
+                <a
+                  href={WHATSAPP_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-accent underline underline-offset-4"
+                >
+                  <WhatsAppIcon className="h-3.5 w-3.5" />
+                  Message Supriya directly
+                </a>
+              </div>
+            )}
+
             <button
               type="submit"
-              className="mt-8 w-full rounded-full bg-gradient-to-r from-gold-600 via-gold-400 to-gold-500 py-3.5 text-sm font-semibold tracking-wide text-midnight-950 shadow-[0_0_28px_rgba(212,169,78,0.3)] transition-all duration-300 hover:shadow-[0_0_44px_rgba(212,169,78,0.5)] hover:brightness-110"
+              disabled={status !== IDLE}
+              className="mt-8 w-full rounded-full bg-gradient-to-r from-gold-600 via-gold-400 to-gold-500 py-3.5 text-sm font-semibold tracking-wide text-midnight-950 shadow-[0_0_28px_rgba(212,169,78,0.3)] transition-all duration-300 hover:shadow-[0_0_44px_rgba(212,169,78,0.5)] hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              Book Your File — {DETAILED_FILE.price}
+              {status === CREATING
+                ? 'Creating your order…'
+                : status === CHECKOUT
+                  ? 'Complete payment in the window…'
+                  : status === VERIFYING
+                    ? 'Confirming your payment…'
+                    : `Book Your File — ${DETAILED_FILE.price}`}
             </button>
 
             <p className="mt-4 text-center text-xs leading-relaxed text-ink-mute" aria-live="polite">
-              {sent
-                ? 'WhatsApp should have opened with your details — just press send to confirm your order.'
-                : 'Submitting opens WhatsApp with your details pre-filled. No payment is taken on this page.'}
+              {status === CHECKOUT
+                ? 'Finish up in the payment window.'
+                : 'Pay securely without leaving this page. Payments are handled by Razorpay.'}
             </p>
           </form>
+          )}
         </div>
       </section>
     </div>
