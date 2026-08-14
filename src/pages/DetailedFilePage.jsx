@@ -26,7 +26,7 @@ export default function DetailedFilePage() {
   const [confirmation, setConfirmation] = useState(null)
 
   useEffect(() => {
-    document.title = 'Detailed Birth Chart File — Astrologer Supriya'
+    document.title = 'Kundli Blueprint — Astrologer Supriya'
   }, [])
 
   // Scoped to this page's own elements so it never re-touches the shared
@@ -64,7 +64,8 @@ export default function DetailedFilePage() {
     let order
     try {
       order = await createOrder({
-        consultationType: 'Detailed File',
+        // Must match the backend's NO_SLOT_PRODUCTS key exactly.
+        consultationType: DETAILED_FILE.name,
         fullName,
         whatsapp,
         email,
@@ -98,7 +99,7 @@ export default function DetailedFilePage() {
         amount: order.amount,
         currency: order.currency,
         name: 'Supriya',
-        description: 'Detailed File — Written Birth Chart Report',
+        description: `${DETAILED_FILE.name} — Written Birth Chart Report`,
         prefill: { name: fullName, contact: toDigits(whatsapp), email },
       })
     } catch {
@@ -138,7 +139,7 @@ export default function DetailedFilePage() {
   }
 
   const confirmWhatsAppLink = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
-    `Hi Supriya, I just paid for my Detailed File. My name is ${confirmation?.fullName ?? ''}.`,
+    `Hi Supriya, I just paid for my ${DETAILED_FILE.name}. My name is ${confirmation?.fullName ?? ''}.`,
   )}`
 
   return (
@@ -160,7 +161,7 @@ export default function DetailedFilePage() {
             Written Birth Chart Report
           </p>
           <h1 className="mt-4 text-4xl font-semibold leading-[1.15] text-ink-hi sm:text-5xl" data-reveal>
-            Get Your <span className="text-gold-shimmer">Detailed File</span>
+            Get Your <span className="text-gold-shimmer">Kundli Blueprint</span>
           </h1>
           <p className="mx-auto mt-5 max-w-xl text-base text-ink sm:text-lg" data-reveal>
             A complete written reading of your birth chart — sent directly to you, without a live
@@ -169,7 +170,7 @@ export default function DetailedFilePage() {
 
           <div className="mt-8 inline-flex items-baseline gap-2 rounded-full border border-accent-strong/40 bg-card px-6 py-2.5" data-reveal>
             <span className="text-2xl font-semibold text-accent sm:text-3xl">{DETAILED_FILE.price}</span>
-            <span className="text-sm text-ink-mute">/ file</span>
+            <span className="text-sm text-ink-mute">/ blueprint</span>
           </div>
 
           <div className="mt-9 flex flex-col items-center justify-center gap-4 sm:flex-row" data-reveal>
@@ -177,7 +178,7 @@ export default function DetailedFilePage() {
               href="#detailed-file-form"
               className="w-full rounded-full bg-gradient-to-r from-gold-600 via-gold-400 to-gold-500 px-8 py-3.5 text-sm font-semibold tracking-wide text-midnight-950 shadow-[0_0_28px_rgba(212,169,78,0.3)] transition-all duration-300 hover:shadow-[0_0_44px_rgba(212,169,78,0.5)] hover:brightness-110 sm:w-auto"
             >
-              Book Your File
+              Book Your Kundli Blueprint
             </a>
             <a
               href={WHATSAPP_URL}
@@ -196,7 +197,7 @@ export default function DetailedFilePage() {
       <section aria-label="What's included" className="relative py-20 sm:py-24">
         <div className="mx-auto max-w-3xl px-6">
           <h2 className="text-center text-3xl font-semibold text-ink-hi sm:text-4xl" data-reveal>
-            What&rsquo;s in Your <span className="text-gold-shimmer">File</span>
+            What&rsquo;s in Your <span className="text-gold-shimmer">Kundli Blueprint</span>
           </h2>
 
           <ul className="mt-10 grid gap-4 sm:grid-cols-2" data-reveal>
@@ -232,13 +233,13 @@ export default function DetailedFilePage() {
       </section>
 
       {/* Order form */}
-      <section id="detailed-file-form" aria-label="Book your detailed file" className="relative overflow-hidden py-20 sm:py-24">
+      <section id="detailed-file-form" aria-label="Book your Kundli Blueprint" className="relative overflow-hidden py-20 sm:py-24">
         <div className="book-glow absolute inset-0" aria-hidden="true" />
         <div className="starfield absolute inset-0 opacity-60" aria-hidden="true" />
 
         <div className="relative mx-auto max-w-2xl px-5 sm:px-8">
           <h2 className="text-center text-3xl font-semibold text-ink-hi sm:text-4xl" data-reveal>
-            Book Your <span className="text-gold-shimmer">File</span>
+            Book Your <span className="text-gold-shimmer">Kundli Blueprint</span>
           </h2>
           <p className="mt-3 text-center text-sm text-ink-mute" data-reveal>
             {status === CONFIRMED
@@ -262,7 +263,7 @@ export default function DetailedFilePage() {
                 Thank you, <span className="text-gold-shimmer">{confirmation.fullName.split(' ')[0]}</span>
               </h3>
               <p className="mx-auto mt-4 max-w-sm text-sm leading-relaxed text-ink" aria-live="polite">
-                Supriya will send your Detailed File to{' '}
+                Supriya will send your {DETAILED_FILE.name} to{' '}
                 <span className="font-semibold text-ink-hi">{confirmation.email}</span> within{' '}
                 {DETAILED_FILE.delivery}.
               </p>
@@ -370,7 +371,7 @@ export default function DetailedFilePage() {
                   id="df-message"
                   name="message"
                   rows="3"
-                  placeholder="Anything specific you'd like covered in your file"
+                  placeholder="Anything specific you'd like covered in your Kundli Blueprint"
                   className="field-input resize-none"
                 />
               </div>
@@ -402,7 +403,7 @@ export default function DetailedFilePage() {
                   ? 'Complete payment in the window…'
                   : status === VERIFYING
                     ? 'Confirming your payment…'
-                    : `Book Your File — ${DETAILED_FILE.price}`}
+                    : `Book Your ${DETAILED_FILE.name} — ${DETAILED_FILE.price}`}
             </button>
 
             <p className="mt-4 text-center text-xs leading-relaxed text-ink-mute" aria-live="polite">

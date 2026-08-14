@@ -94,10 +94,18 @@ export const SERVICES = [
   },
 ]
 
-/* Detailed File — a standalone written birth-chart report, sold separately from
-   the live consultations. Structure follows the reference page the client shared;
-   the wording here is original, not copied from that site. */
+/* Kundli Blueprint — a standalone written birth-chart report, sold separately
+   from the live consultations. Structure follows the reference page the client
+   shared; the wording here is original, not copied from that site.
+
+   The route stays /detailed-file so existing links keep working — this was a
+   rename of the product's display name, not of its URL. */
 export const DETAILED_FILE = {
+  /* Single source of truth for the name. This exact string is also the key the
+     backend's NO_SLOT_PRODUCTS map looks up during createOrder, so a mismatch
+     here fails the order outright with "Unknown service selected" — hence one
+     constant rather than the literal repeated across the page. */
+  name: 'Kundli Blueprint',
   // Written "Rs." to match the price format used on the service cards
   price: 'Rs. 1,200',
   // [OPEN ITEM] Delivery window carried over from the client's reference page.
@@ -110,7 +118,7 @@ export const DETAILED_FILE = {
     'Which planets are supporting you, and which are currently working against you',
     'Practical remedies for the planets causing difficulty',
     'Clear do’s and don’ts to follow in daily life',
-    'A direct number to ask any questions once your file arrives',
+    'A direct number to ask any questions once your Kundli Blueprint arrives',
   ],
 }
 

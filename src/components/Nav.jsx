@@ -82,7 +82,7 @@ export default function Nav({ theme, onToggleTheme }) {
                 to={DETAILED_FILE_PATH}
                 className="text-sm font-medium text-ink transition-colors hover:text-accent"
               >
-                Detailed File
+                Kundli Blueprint
               </Link>
             </li>
             <li>
@@ -156,7 +156,7 @@ export default function Nav({ theme, onToggleTheme }) {
               tabIndex={menuOpen ? 0 : -1}
               className="block py-3 font-display text-3xl font-medium text-ink-hi transition-colors hover:text-accent"
             >
-              Detailed File
+              Kundli Blueprint
             </Link>
           </li>
         </ul>
