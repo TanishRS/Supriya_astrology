@@ -43,6 +43,12 @@
     />
   </head>
   <body>
+    <!-- CSP NOTE: the inline script below is allowlisted in vercel.json by a
+         sha256 hash of its exact contents. Change a single character here and
+         the browser will silently refuse to run it — the page still loads, but
+         the theme flashes on every visit. After editing, rebuild and run
+         `npm run csp-hash` to get the new hash, then paste it into the
+         Content-Security-Policy value in vercel.json. -->
     <script>
       // Set the theme before first paint to avoid a flash of the wrong mode
       ;(function () {
