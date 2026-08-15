@@ -18,18 +18,21 @@
       property="og:description"
       content="Clarity on health, wealth, relationships & career through ancient wisdom. Book a consultation with Supriya."
     />
-    <!-- These must be absolute URLs on a domain that actually serves the site, or
-         WhatsApp/Instagram link previews show no image. Point them at the custom
-         domain once supriyakirugaval.com is connected to this Vercel project. -->
-    <meta property="og:url" content="https://supriya-astrology.vercel.app" />
-    <meta property="og:image" content="https://supriya-astrology.vercel.app/supriya-portrait.jpg" />
+    <!-- Absolute URLs on the live custom domain. These must point at a host that
+         actually serves the site, or WhatsApp/Instagram link previews show no
+         image at all. Note the spelling: supriyaCKirugaval. -->
+    <meta property="og:url" content="https://supriyackirugaval.com" />
+    <meta property="og:image" content="https://supriyackirugaval.com/supriya-portrait.jpg" />
     <meta property="og:image:alt" content="Supriya, astrology, tarot and energy healing consultant" />
     <meta name="twitter:card" content="summary" />
     <!-- Uses the portrait as the share image. [OPEN ITEM] Still no logo/brand mark
          from the client; a dedicated 1200x630 landscape banner would present better
          on WhatsApp/Instagram link previews than this square portrait. -->
 
-    <link rel="canonical" href="https://supriya-astrology.vercel.app" />
+    <!-- The apex, not www: www 307-redirects here, and a canonical (or an
+         og:image) pointing at a redirect is the kind of thing some scrapers
+         quietly refuse to follow. -->
+    <link rel="canonical" href="https://supriyackirugaval.com" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />

@@ -2,11 +2,14 @@ export const WHATSAPP_NUMBER = '919619635666'
 export const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}`
 export const INSTAGRAM_URL = 'https://www.instagram.com/astronumerodecode'
 
-// [OPEN ITEM] The client's source doc listed "supriyakirugaval.com" under an
-// "Email" field — it is clearly a website URL, not an email address. Displayed
-// as a website link for now; a real email address is still needed from the client.
-export const WEBSITE_URL = 'https://supriyakirugaval.com'
-export const WEBSITE_LABEL = 'supriyakirugaval.com'
+/* The live domain, now connected to this Vercel project. Note the spelling:
+   "supriyackirugaval" with a ck — the client's source doc had it as
+   "supriyakirugaval", which does not resolve, so the footer link was dead.
+
+   [OPEN ITEM] That source doc listed this under an "Email" field even though
+   it is plainly a URL. A real email address is still needed from the client. */
+export const WEBSITE_URL = 'https://supriyackirugaval.com'
+export const WEBSITE_LABEL = 'supriyackirugaval.com'
 
 // Client-supplied portrait. Drop the photo at `public/supriya-portrait.jpg`;
 // if the file is absent the About section falls back to a silhouette rather
