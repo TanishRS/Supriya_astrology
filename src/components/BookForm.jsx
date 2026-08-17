@@ -129,6 +129,7 @@ export default function BookForm({ selectedService, onServiceChange }) {
 
     const fullName = data.get('name')
     const whatsapp = data.get('whatsapp')
+    const email = data.get('email')
     const consultationType = data.get('service')
 
     setFlowError(null)
@@ -142,6 +143,7 @@ export default function BookForm({ selectedService, onServiceChange }) {
       order = await createOrder({
         fullName,
         whatsapp,
+        email,
         dob: data.get('dob'),
         tob: data.get('tob'),
         pob: data.get('pob'),
@@ -175,7 +177,7 @@ export default function BookForm({ selectedService, onServiceChange }) {
         currency: order.currency,
         name: 'Supriya',
         description: consultationType,
-        prefill: { name: fullName, contact: toDigits(whatsapp) },
+        prefill: { name: fullName, contact: toDigits(whatsapp), email },
       })
     } catch {
       setStatus(IDLE)
@@ -342,6 +344,23 @@ export default function BookForm({ selectedService, onServiceChange }) {
               inputMode="tel"
               onInput={handlePhoneInput}
               placeholder="+91 98765 43210"
+              className="field-input"
+            />
+          </div>
+
+          {/* Matches the Kundli Blueprint form's email field. Required, so every
+              booking row carries an address Supriya can actually reply to. */}
+          <div className="sm:col-span-2">
+            <label htmlFor="bk-email" className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-ink-mute">
+              Email
+            </label>
+            <input
+              id="bk-email"
+              name="email"
+              type="email"
+              required
+              autoComplete="email"
+              placeholder="you@example.com"
               className="field-input"
             />
           </div>

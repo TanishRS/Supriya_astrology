@@ -106,19 +106,25 @@ export function getUpcomingDays(workingDays, count = DAYS_TO_SHOW, from = new Da
  * sittings (morning and late evening) — the gap between them is simply not
  * available, rather than a "break" within one long day.
  *
- * `end` is the last bookable START time, not the closing time. So a
- * 19:00–23:00 window offers a 23:00 session (running to 23:30), which is how
- * "7 to 11" reads to a person. Treating `end` as the closing time instead
- * silently drops that final slot — the evening arc stopped at 10:30 PM.
+ * `end` is the CLOSING time, not the last bookable start — a session must
+ * finish before the window shuts. So 19:00–23:00 with 30-minute sessions ends
+ * at 22:30, and 09:00–13:00 ends at 12:30.
+ *
+ * This deliberately matches the backend, which enforces the same rule and
+ * rejects anything later with "That slot is outside working hours". Offering
+ * 23:00 or 13:00 here reads more naturally as "7 to 11", but it let customers
+ * pick a slot that could never be booked — a dead end at the payment step is
+ * far worse than a clock that stops half an hour early.
  */
 export function generateWindowSlots(workingWindows, slotLengthMinutes) {
   if (!workingWindows?.length || !slotLengthMinutes) return []
   return workingWindows
     .map(({ start, end }) => {
       const open = toMinutes(start)
-      const lastStart = toMinutes(end)
+      const close = toMinutes(end)
       const slots = []
-      for (let t = open; t <= lastStart; t += slotLengthMinutes) {
+      // `t + slotLength <= close` — the whole session has to fit inside the window.
+      for (let t = open; t + slotLengthMinutes <= close; t += slotLengthMinutes) {
         slots.push(toTimeString(t))
       }
       return slots
