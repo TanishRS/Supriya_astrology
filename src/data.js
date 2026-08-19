@@ -1,5 +1,7 @@
 export const WHATSAPP_NUMBER = '919619635666'
 export const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}`
+// Human-readable form of the same number, for places that print it as text
+export const WHATSAPP_DISPLAY = '+91 96196 35666'
 export const INSTAGRAM_URL = 'https://www.instagram.com/astronumerodecode'
 
 /* The live domain, now connected to this Vercel project. Note the spelling:
@@ -10,6 +12,12 @@ export const INSTAGRAM_URL = 'https://www.instagram.com/astronumerodecode'
    it is plainly a URL. A real email address is still needed from the client. */
 export const WEBSITE_URL = 'https://supriyackirugaval.com'
 export const WEBSITE_LABEL = 'supriyackirugaval.com'
+
+/* Contact address given in the Privacy Policy / Terms copy. Note this one is
+   spelled WITHOUT the ck that the domain has — worth confirming with the
+   client, given the domain itself was mis-spelled in the same source doc. */
+export const EMAIL = 'supriyakirugaval@gmail.com'
+export const EMAIL_URL = `mailto:${EMAIL}`
 
 // Client-supplied portrait. Drop the photo at `public/supriya-portrait.jpg`;
 // if the file is absent the About section falls back to a silhouette rather
@@ -38,6 +46,10 @@ export const DETAILED_FILE_PATH = '/detailed-file'
 // Payment Page's redirect/callback URL in the Razorpay dashboard, otherwise the
 // WhatsApp handoff never runs and they simply land on Razorpay's own receipt.
 export const BOOKING_CONFIRMED_PATH = '/booking-confirmed'
+
+// Long-form legal pages, linked from the footer
+export const PRIVACY_PATH = '/privacy'
+export const TERMS_PATH = '/terms'
 
 export const MODALITIES = [
   'Astrology',

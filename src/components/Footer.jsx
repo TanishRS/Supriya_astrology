@@ -1,4 +1,12 @@
-import { INSTAGRAM_URL, WEBSITE_LABEL, WEBSITE_URL, WHATSAPP_URL } from '../data.js'
+import { Link } from 'react-router-dom'
+import {
+  INSTAGRAM_URL,
+  PRIVACY_PATH,
+  TERMS_PATH,
+  WEBSITE_LABEL,
+  WEBSITE_URL,
+  WHATSAPP_URL,
+} from '../data.js'
 import { useSectionNav } from '../lib/sectionNav.js'
 import { GlobeIcon, InstagramIcon, WhatsAppIcon } from './Icons.jsx'
 
@@ -83,7 +91,22 @@ export default function Footer() {
       </div>
 
       <div className="relative mt-16 border-t border-line py-7">
-        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-6 text-xs text-ink-faint sm:flex-row">
+        {/* Legal links sit on their own row rather than joining the copyright
+            line below — three items across that row would crowd badly on
+            tablet widths, given how long the modality list already is. */}
+        <nav
+          aria-label="Legal"
+          className="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-x-7 gap-y-2 px-6 text-xs text-ink-faint"
+        >
+          <Link to={PRIVACY_PATH} className="transition-colors hover:text-accent">
+            Privacy Policy
+          </Link>
+          <Link to={TERMS_PATH} className="transition-colors hover:text-accent">
+            Terms and Conditions
+          </Link>
+        </nav>
+
+        <div className="mx-auto mt-5 flex max-w-6xl flex-col items-center justify-between gap-3 px-6 text-xs text-ink-faint sm:flex-row">
           <p>© {new Date().getFullYear()} Supriya. All rights reserved.</p>
           <p className="text-center">
             Astrology · Tarot · Numerology · Vastu · Reiki · Akashic Records · Inner Child Healing
