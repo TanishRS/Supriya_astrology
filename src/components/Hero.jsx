@@ -50,13 +50,14 @@ export default function Hero({ theme }) {
             Vedic Wisdom · Modern Clarity
           </p>
 
-          {/* [OPEN ITEM] Headline + subheadline are EDITABLE PLACEHOLDERS — not yet approved by the client */}
+          {/* [OPEN ITEM] Headline is still an EDITABLE PLACEHOLDER — not yet approved by the client.
+              The tagline below it is client-approved copy. */}
           <h1 className="text-4xl font-semibold leading-[1.12] text-ink-hi sm:text-5xl md:text-6xl lg:text-7xl">
             Astrology, Tarot &amp; Energy Healing with{' '}
             <em className="text-gold-shimmer not-italic">Supriya</em>
           </h1>
           <p className="mx-auto mt-6 max-w-xl text-base text-ink sm:text-lg">
-            Clarity on health, wealth, relationships &amp; career through ancient wisdom
+            Guidance rooted in the stars, grounded in real life
           </p>
 
           <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
