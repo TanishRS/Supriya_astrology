@@ -37,13 +37,14 @@ export default function About() {
                   src={PORTRAIT_SRC}
                   onError={() => setPortraitFailed(true)}
                   alt="Supriya, astrology, tarot and energy healing consultant"
-                  width="416"
-                  height="416"
+                  width="900"
+                  height="1199"
                   loading="lazy"
                   decoding="async"
-                  /* The shipped file is already a square face crop, so this is a
-                     no-op for it — it keeps the framing sane if a taller,
-                     uncropped photo is dropped in later. */
+                  /* The shipped file is the uncropped 3:4 portrait, so `cover`
+                     inside this square disc trims 25% off the height. 28% down
+                     is the window that lands her face in the middle of the
+                     circle with headroom above and shoulders anchoring the base. */
                   className="h-full w-full object-cover [object-position:50%_28%]"
                 />
               )}
