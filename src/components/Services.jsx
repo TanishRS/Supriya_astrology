@@ -1,5 +1,6 @@
 import { SERVICES } from '../data.js'
 import { ServiceIcon } from './Icons.jsx'
+import PriceTag from './PriceTag.jsx'
 
 export default function Services({ onBook }) {
   return (
@@ -29,7 +30,9 @@ export default function Services({ onBook }) {
               <h3 className="mt-4 text-xl font-semibold leading-snug text-ink-hi sm:text-2xl">
                 {service.name}
               </h3>
-              <p className="mt-1 text-sm font-semibold tracking-wide text-accent">{service.price}</p>
+              <p className="mt-1">
+                <PriceTag originalPrice={service.originalPrice} price={service.price} />
+              </p>
 
               <ul className="mt-4 flex-1 space-y-2">
                 {service.items.map((item) => (

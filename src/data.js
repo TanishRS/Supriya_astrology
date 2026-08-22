@@ -61,10 +61,21 @@ export const MODALITIES = [
   'Inner Child Healing',
 ]
 
+/* Two price fields per service, both DISPLAY ONLY:
+     price          — the real, current price. Shown as the live figure.
+     originalPrice  — the struck-through "was" figure, a marketing number.
+
+   Neither is ever sent to the backend. createOrder posts the service NAME and
+   nothing else; the amount that gets charged comes back from the backend's own
+   SERVICE_PRICES / NO_SLOT_PRODUCTS map as order.amount and goes straight to
+   Razorpay. Editing anything here changes the page and cannot change a charge —
+   which also means these strings can silently drift from what is actually
+   billed, so `price` must be kept in step with the backend by hand. */
 export const SERVICES = [
   {
     id: 'astrology',
     name: 'Astrology Consultation',
+    originalPrice: 'Rs. 7,001',
     price: 'Rs. 5,001',
     icon: 'planet',
     items: ['Birth Chart Analysis', 'Career', 'Marriage', 'Finance'],
@@ -72,6 +83,7 @@ export const SERVICES = [
   {
     id: 'numerology',
     name: 'Numerology',
+    originalPrice: 'Rs. 5,003',
     price: 'Rs. 3,003',
     icon: 'numbers',
     items: ['Name Correction', 'Business Numbers', 'Mobile Number Analysis'],
@@ -79,6 +91,7 @@ export const SERVICES = [
   {
     id: 'tarot',
     name: 'Tarot Reading',
+    originalPrice: 'Rs. 5,003',
     price: 'Rs. 3,003',
     icon: 'cards',
     items: ['Love', 'Career', 'Yes/No Questions'],
@@ -89,6 +102,7 @@ export const SERVICES = [
     // for Reiki — confirm they describe Inner Child Healing before launch.
     id: 'inner-child',
     name: 'Inner Child Healing',
+    originalPrice: 'Rs. 15,000',
     price: 'Rs. 11,000',
     icon: 'lotus',
     items: ['Emotional Healing', 'Stress Relief', 'Energy Balancing'],
@@ -96,6 +110,7 @@ export const SERVICES = [
   {
     id: 'akashic',
     name: 'Akashic Records Reading',
+    originalPrice: 'Rs. 7,001',
     price: 'Rs. 5,001',
     icon: 'book',
     items: ['Past Life', 'Soul Purpose', 'Karmic Patterns'],
@@ -103,6 +118,7 @@ export const SERVICES = [
   {
     id: 'vastu',
     name: 'Vastu Consultation',
+    originalPrice: 'Rs. 50,001',
     price: 'Rs. 21,000',
     icon: 'home',
     items: ['Home', 'Office', 'Business'],
@@ -121,7 +137,9 @@ export const DETAILED_FILE = {
      here fails the order outright with "Unknown service selected" — hence one
      constant rather than the literal repeated across the page. */
   name: 'Kundli Blueprint',
-  // Written "Rs." to match the price format used on the service cards
+  // Written "Rs." to match the price format used on the service cards.
+  // Display only — see the note on SERVICES above.
+  originalPrice: 'Rs. 2,500',
   price: 'Rs. 1,200',
   // [OPEN ITEM] Delivery window carried over from the client's reference page.
   // This is a promise made to paying customers — confirm Supriya's real

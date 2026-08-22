@@ -7,6 +7,7 @@ import { openCheckout } from '../lib/razorpay.js'
 import { handlePhoneInput, toDigits } from '../lib/phone.js'
 import { BIRTH_DATE_MIN, birthDateMax } from '../lib/birthDate.js'
 import { WhatsAppIcon } from '../components/Icons.jsx'
+import PriceTag from '../components/PriceTag.jsx'
 
 const GENDERS = ['Male', 'Female', 'Other']
 
@@ -169,7 +170,11 @@ export default function DetailedFilePage() {
           </p>
 
           <div className="mt-8 inline-flex items-baseline gap-2 rounded-full border border-accent-strong/40 bg-card px-6 py-2.5" data-reveal>
-            <span className="text-2xl font-semibold text-accent sm:text-3xl">{DETAILED_FILE.price}</span>
+            <PriceTag
+              size="hero"
+              originalPrice={DETAILED_FILE.originalPrice}
+              price={DETAILED_FILE.price}
+            />
             <span className="text-sm text-ink-mute">/ blueprint</span>
           </div>
 
@@ -403,7 +408,13 @@ export default function DetailedFilePage() {
                   ? 'Complete payment in the window…'
                   : status === VERIFYING
                     ? 'Confirming your payment…'
-                    : `Book Your ${DETAILED_FILE.name} — ${DETAILED_FILE.price}`}
+                    : (
+                        <>
+                          Book Your {DETAILED_FILE.name} —{' '}
+                          <s className="font-medium opacity-65">{DETAILED_FILE.originalPrice}</s>{' '}
+                          {DETAILED_FILE.price}
+                        </>
+                      )}
             </button>
 
             <p className="mt-4 text-center text-xs leading-relaxed text-ink-mute" aria-live="polite">
